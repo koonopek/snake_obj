@@ -127,22 +127,8 @@ exports.BLOCK_SIZE = 20;
 exports.BOARD_SIZE = 300;
 exports.BOARD_COLOR = "red";
 
-var Board =
-/** @class */
-function () {
-  function Board(idCanvasElement, boardColor, boardSize, blockSize) {
-    if (boardColor === void 0) {
-      boardColor = exports.BOARD_COLOR;
-    }
-
-    if (boardSize === void 0) {
-      boardSize = exports.BOARD_SIZE;
-    }
-
-    if (blockSize === void 0) {
-      blockSize = exports.BLOCK_SIZE;
-    }
-
+class Board {
+  constructor(idCanvasElement, boardColor = exports.BOARD_COLOR, boardSize = exports.BOARD_SIZE, blockSize = exports.BLOCK_SIZE) {
     this.canvas = document.getElementById(idCanvasElement);
     this.ctx = this.canvas.getContext('2d');
     this.canvas.style.backgroundColor = boardColor;
@@ -152,46 +138,37 @@ function () {
     this.blockSize = blockSize;
   }
 
-  Board.prototype.drawBlock = function (x, y) {
+  drawBlock(x, y) {
     this.ctx.fillRect(x, y, this.blockSize, this.blockSize);
     this.ctx.stroke();
-  };
+  }
 
-  Board.prototype.drawFood = function (x, y) {
+  drawFood(x, y) {
     this.ctx.fillStyle = "#3370d4";
     this.ctx.beginPath();
     this.ctx.arc(x, y, exports.BLOCK_SIZE / 2, 0, 2 * Math.PI);
     this.ctx.closePath();
     this.ctx.fill();
     this.ctx.stroke();
-  };
+  }
 
-  Board.prototype.clear = function () {
+  clear() {
     this.ctx.clearRect(0, 0, this.boardSize, this.boardSize);
     this.ctx.stroke();
-  };
+  }
 
-  return Board;
-}();
+}
 
 exports.default = Board;
 },{}],"Snake.ts":[function(require,module,exports) {
 "use strict";
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var Snake = /*#__PURE__*/function () {
-  function Snake(step) {
-    _classCallCheck(this, Snake);
-
+class Snake {
+  constructor(step) {
     this.step = step;
     this.direction = Direction.Right;
     this.head = {
@@ -205,114 +182,117 @@ var Snake = /*#__PURE__*/function () {
     };
   }
 
-  _createClass(Snake, [{
-    key: "push",
-    value: function push() {
-      var block = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-        x: 0,
-        y: 0,
-        prev: null
-      };
-      var start = this.head;
+  push(block = {
+    x: 0,
+    y: 0,
+    prev: null
+  }) {
+    let start = this.head;
 
-      while (start.prev !== null) {
-        start = start.prev;
-      }
-
-      start.prev = block;
+    while (start.prev !== null) {
+      start = start.prev;
     }
-  }, {
-    key: Symbol.iterator,
-    value: function value() {
-      var curr = this.head;
-      return {
-        next: function () {
-          console.log('in iterator');
-          if (curr.prev === null) return {
-            value: null,
-            done: true
-          };else {
-            curr = curr.prev;
-            return {
-              value: curr,
-              done: false
-            };
-          }
-        }.bind(this)
-      };
-    }
-  }, {
-    key: "checkForDirections",
-    value: function checkForDirections(dir) {
-      console.log("this.dir : ".concat(this.direction, " dir: ").concat(dir));
-      if (dir === Direction.Down && this.direction === Direction.Up) return false;
-      if (dir === Direction.Up && this.direction === Direction.Down) return false;
-      if (dir === Direction.Left && this.direction === Direction.Right) return false;
-      if (dir === Direction.Right && this.direction === Direction.Left) return false;
-      return true;
-    }
-  }, {
-    key: "move",
-    value: function move(dir) {
-      if (!this.checkForDirections(dir)) return false;
-      this.direction = dir;
 
-      switch (dir) {
-        case Direction.Right:
-          this.head.prev.x += this.step;
-          break;
+    start.prev = block;
+  }
 
-        case Direction.Left:
-          this.head.prev.x -= this.step;
-
-        case Direction.Up:
-          this.head.prev.y += this.step;
-          break;
-
-        case Direction.Down:
-          this.head.prev.y -= this.step;
-      }
-
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = this[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var block = _step.value;
-
-          if (block.prev !== null) {
-            block.x = block.prev.x;
-            block.y = block.prev.y;
-          }
+  [Symbol.iterator]() {
+    let curr = this.head;
+    return {
+      next: function () {
+        console.log('in iterator');
+        if (curr.prev === null) return {
+          value: null,
+          done: true
+        };else {
+          curr = curr.prev;
+          return {
+            value: curr,
+            done: false
+          };
         }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+      }.bind(this)
+    };
+  }
+
+  checkForDirections(dir) {
+    console.log(`this.dir : ${this.direction} dir: ${dir}`);
+    if (dir === Direction.Down && this.direction === Direction.Up) return false;
+    if (dir === Direction.Up && this.direction === Direction.Down) return false;
+    if (dir === Direction.Left && this.direction === Direction.Right) return false;
+    if (dir === Direction.Right && this.direction === Direction.Left) return false;
+    return true;
+  }
+
+  changeDirection(dir) {
+    if (!this.checkForDirections(dir)) return false;
+    this.direction = dir;
+  }
+
+  move() {
+    const dir = this.direction;
+    let tmpBox = {
+      x: this.head.prev.x,
+      y: this.head.prev.y,
+      prev: this.head.prev.prev
+    };
+
+    switch (dir) {
+      case Direction.Right:
+        tmpBox.x += this.step;
+        break;
+
+      case Direction.Left:
+        tmpBox.x -= this.step;
+        break;
+
+      case Direction.Up:
+        tmpBox.y -= this.step;
+        break;
+
+      case Direction.Down:
+        tmpBox.y += this.step;
+    }
+
+    let newPositions = [];
+
+    for (const block of this) {
+      if (block.prev !== null) {
+        newPositions.push({
+          x: block.x,
+          y: block.y
+        });
       }
-
-      return true;
     }
-  }, {
-    key: "eat",
-    value: function eat() {
-      this.push();
-      this.move(this.direction); //bug maybe?
-    }
-  }]);
 
-  return Snake;
-}();
+    let i = 0;
+
+    for (const block of this) {
+      if (this.head.prev === block) continue;
+      block.x = newPositions[i].x;
+      block.y = newPositions[i].y;
+      i++;
+    }
+
+    this.head.prev = tmpBox;
+    return true;
+  }
+
+  eat() {
+    let curr = this.head;
+
+    while (curr.prev !== null) {
+      curr = curr.prev;
+    }
+
+    curr.prev = {
+      x: curr.x,
+      y: curr.y,
+      prev: null
+    };
+  }
+
+}
 
 exports.default = Snake;
 var Direction;
@@ -322,39 +302,57 @@ var Direction;
   Direction[Direction["Down"] = 1] = "Down";
   Direction[Direction["Left"] = 2] = "Left";
   Direction[Direction["Right"] = 3] = "Right";
-})(Direction || (Direction = {}));
+})(Direction = exports.Direction || (exports.Direction = {}));
 },{}],"Game.ts":[function(require,module,exports) {
 "use strict";
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var __awaiter = this && this.__awaiter || function (thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function (resolve) {
+      resolve(value);
+    });
+  }
 
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+  return new (P || (P = Promise))(function (resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
 
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
 
 var __importStar = this && this.__importStar || function (mod) {
   if (mod && mod.__esModule) return mod;
   var result = {};
-  if (mod != null) for (var k in mod) {
-    if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-  }
+  if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
   result["default"] = mod;
   return result;
-};
-
-var __importDefault = this && this.__importDefault || function (mod) {
-  return mod && mod.__esModule ? mod : {
-    "default": mod
-  };
 };
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var Board_1 = __importStar(require("./Board"));
+const Board_1 = __importStar(require("./Board"));
 
-var Snake_1 = __importDefault(require("./Snake"));
+const Snake_1 = __importStar(require("./Snake"));
 
 var State;
 
@@ -367,68 +365,98 @@ var State;
 
 
 function sleep(ms) {
-  return new Promise(function (resolve) {
-    return setTimeout(resolve, ms);
-  });
+  return new Promise(resolve => setTimeout(resolve, ms));
 } //do exportu
 
 
-var Game = /*#__PURE__*/function () {
-  function Game(idCanvasElement) {
-    var boardColor = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Board_1.BOARD_COLOR;
-    var boardSize = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Board_1.BOARD_SIZE;
-    var blockSize = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : Board_1.BLOCK_SIZE;
-
-    _classCallCheck(this, Game);
-
+class Game {
+  constructor(idCanvasElement, boardColor = Board_1.BOARD_COLOR, boardSize = Board_1.BOARD_SIZE, blockSize = Board_1.BLOCK_SIZE) {
     this.board = new Board_1.default(idCanvasElement);
     this.state = State.Pause;
     this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
   }
 
-  _createClass(Game, [{
-    key: "drawSnake",
-    value: function drawSnake() {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+  checkKey(e) {
+    e = e || window.event;
 
-      try {
-        for (var _iterator = this.snake[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var block = _step.value;
-          this.board.drawBlock(block.x, block.y);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return != null) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
+    if (e.keyCode == '38') {
+      this.snake.changeDirection(Snake_1.Direction.Up);
+    } else if (e.keyCode == '40') {
+      // down arrow
+      this.snake.changeDirection(Snake_1.Direction.Down);
+    } else if (e.keyCode == '37') {
+      // left arrow
+      this.snake.changeDirection(Snake_1.Direction.Left);
+    } else if (e.keyCode == '39') {
+      // right arrow
+      this.snake.changeDirection(Snake_1.Direction.Right);
     }
-  }, {
-    key: "start",
-    value: function start(delay) {
-      var stop = 0;
-      var currentDir = this.snake.direction;
+  }
 
-      while (!stop) {
+  drawSnake() {
+    for (const block of this.snake) {
+      this.board.drawBlock(block.x, block.y);
+    }
+  }
+
+  checkForCollision() {
+    if (this.snake.head.prev.x < -Board_1.BLOCK_SIZE) return true;
+    if (this.snake.head.prev.y < -Board_1.BLOCK_SIZE) return true;
+    if (this.snake.head.prev.x > Board_1.BOARD_SIZE) return true;
+    if (this.snake.head.prev.y > Board_1.BOARD_SIZE) return true;
+    return false;
+  }
+
+  generateFood() {}
+
+  handleGameState() {
+    switch (this.state) {
+      case State.GameOver:
+        this.gameOver();
+        break;
+
+      case State.Win:
+        this.win();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  gameOver() {
+    this.board.clear();
+    this.board.canvas.style.backgroundColor = "black";
+  }
+
+  win() {
+    this.board.clear();
+    this.board.canvas.style.backgroundColor = "green";
+  }
+
+  start(delay = 200) {
+    return __awaiter(this, void 0, void 0, function* () {
+      document.onkeydown = this.checkKey.bind(this);
+      this.state = State.Playing;
+
+      while (this.state === State.Playing) {
+        this.board.clear();
         this.drawSnake();
-        this.snake.move(currentDir);
-        sleep(1000);
-      }
-    }
-  }]);
+        this.snake.move();
 
-  return Game;
-}();
+        if (this.checkForCollision()) {
+          this.state = State.GameOver;
+          break;
+        }
+
+        yield sleep(delay);
+      }
+
+      this.handleGameState();
+    });
+  }
+
+}
 
 exports.default = Game;
 },{"./Board":"Board.ts","./Snake":"Snake.ts"}],"index.ts":[function(require,module,exports) {
@@ -444,11 +472,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var Game_1 = __importDefault(require("./Game"));
+const Game_1 = __importDefault(require("./Game"));
 
-var game = new Game_1.default('canvas');
+const game = new Game_1.default('canvas');
 console.log(game);
-game.drawSnake();
+game.start(150);
 },{"./Game":"Game.ts"}],"../../../../../../usr/local/lib/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

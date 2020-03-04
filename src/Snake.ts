@@ -38,32 +38,50 @@ export default class Snake implements Iterable<Block> {
         return true;
     }
 
-    public move(dir:Direction):boolean {
+    public changeDirection(dir:Direction){
         if(!this.checkForDirections(dir)) return false;
         this.direction = dir;
+    }
 
+    public move():boolean {
+        const dir = this.direction;
+        let tmpBox = {x:this.head.prev.x,y:this.head.prev.y,prev:this.head.prev.prev};
         switch (dir) {
             case Direction.Right:
-                this.head.prev.x+=this.step;
+                tmpBox.x+=this.step;
                 break;
             case Direction.Left:
-                this.head.prev.x-=this.step;
+                tmpBox.x-=this.step;
+                break;
             case Direction.Up:
-                this.head.prev.y+=this.step;
+                tmpBox.y-=this.step;
                 break;
             case Direction.Down:
-                this.head.prev.y-=this.step;
+                tmpBox.y+=this.step;
         }
+        let newPositions:Point[] = [];
 
         for (const block of this){
-            if(block.prev !== null){block.x = block.prev.x; block.y = block.prev.y;}
+            if(block.prev !== null){ newPositions.push({x:block.x,y:block.y})}
         }
+        let i=0;
+        for (const block of this){
+            if(this.head.prev === block) continue;
+            block.x = newPositions[i].x;
+            block.y = newPositions[i].y;
+            i++;
+        }
+
+        
+
+        this.head.prev = tmpBox;
         return true;
     }
 
     eat(){
-        this.push();
-        this.move(this.direction);//bug maybe?
+        let curr = this.head;
+        while(curr.prev !== null){curr = curr.prev;}
+        curr.prev={x:curr.x,y:curr.y,prev:null};
     }
 }
 
@@ -73,9 +91,13 @@ type Block = {
     y: number
 }
 
-enum Direction {
+export enum Direction {
     Up,
     Down,
     Left,
     Right
 }
+ type Point = {
+     x:number,
+     y:number
+ }

@@ -3,7 +3,7 @@ export const BOARD_SIZE = 300;
 export const BOARD_COLOR = "red";
 
 export default class Board {
-    private canvas: HTMLCanvasElement;
+    public canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private blockSize: number;
     private boardSize: number;
