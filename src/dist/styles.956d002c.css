@@ -1,0 +1,13 @@
+body {
+    background-color: gray;
+}
+#canvas {
+    position: absolute;
+    border: 1px black;
+    background-color: red;
+    left: 50vw;
+    top: 50vh;
+    transform: translate(-50%,-50%);
+}
+
+/*# sourceMappingURL=/styles.956d002c.css.map */
