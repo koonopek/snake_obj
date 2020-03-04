@@ -1,5 +1,5 @@
 import Board,{BOARD_SIZE,BLOCK_SIZE, BOARD_COLOR} from './Board';
-import Snake,{Direction} from './Snake';
+import Snake,{Direction,Point} from './Snake';
 
 enum State{
     Playing,
@@ -19,6 +19,7 @@ export default class Game {
     public snake:Snake;
     public board:Board;
     private state:State;
+    private food:Point;
 
     constructor(idCanvasElement:string,boardColor=BOARD_COLOR,boardSize = BOARD_SIZE,blockSize = BLOCK_SIZE) {
         this.board = new Board(idCanvasElement);
@@ -45,10 +46,11 @@ export default class Game {
         }
     }
 
-    drawSnake():void{
+    render():void{
         for(const block of this.snake){
             this.board.drawBlock(block.x,block.y);
         }
+        this.board.drawBlock    (this.food.x,this.food.y);
     }
 
     checkForCollision():boolean{
@@ -56,11 +58,23 @@ export default class Game {
         if(this.snake.head.prev.y < -BLOCK_SIZE) return true;
         if(this.snake.head.prev.x > BOARD_SIZE) return true;
         if(this.snake.head.prev.y > BOARD_SIZE) return true;
+        for(const block of this.snake){
+            if(this.snake.head.prev.x === block.x && this.snake.head.prev.y === block.y && this.snake.head.prev !== block){return true;}
+        }
+        return false;
+    }
+
+    checkEat(){
+        // console.log(`Check eat: x:${(this.food.x - BsLOCK_SIZE) - this.snake.head.prev.x}  y:${this.food.y + BLOCK_SIZE - this.snake.head.prev.y} `)
+        if(this.snake.head.prev.x === this.food.x  && this.snake.head.prev.y === this.food.y) return true;
         return false;
     }
 
     generateFood(){
-
+        let x = (Math.floor(Math.random() * (BOARD_SIZE/10))*BLOCK_SIZE) % BOARD_SIZE;
+        let y = (Math.floor(Math.random() * (BOARD_SIZE/10))*BLOCK_SIZE) % BOARD_SIZE;
+        console.log(x,y);
+        this.food={x,y};
     }
 
     handleGameState():void{
@@ -86,19 +100,23 @@ export default class Game {
         this.board.canvas.style.backgroundColor="green";
     }
 
-
-    
-
     public async start(delay=200){
         document.onkeydown = this.checkKey.bind(this); 
+        this.generateFood();
         this.state = State.Playing;
-
+        this.snake.eat();
+        this.snake.eat();
+        this.snake.eat();
+        this.snake.eat();
+        
         while(this.state === State.Playing){
             this.board.clear();
-            this.drawSnake();
+            this.render();
             this.snake.move();
 
             if(this.checkForCollision()) {this.state=State.GameOver; break;}
+            if(this.checkEat()){this.snake.eat();this.generateFood();}
+
             await sleep(delay);
         }
         this.handleGameState();

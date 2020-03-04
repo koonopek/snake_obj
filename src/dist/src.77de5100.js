@@ -393,10 +393,12 @@ class Game {
     }
   }
 
-  drawSnake() {
+  render() {
     for (const block of this.snake) {
       this.board.drawBlock(block.x, block.y);
     }
+
+    this.board.drawBlock(this.food.x, this.food.y);
   }
 
   checkForCollision() {
@@ -404,10 +406,31 @@ class Game {
     if (this.snake.head.prev.y < -Board_1.BLOCK_SIZE) return true;
     if (this.snake.head.prev.x > Board_1.BOARD_SIZE) return true;
     if (this.snake.head.prev.y > Board_1.BOARD_SIZE) return true;
+
+    for (const block of this.snake) {
+      if (this.snake.head.prev.x === block.x && this.snake.head.prev.y === block.y && this.snake.head.prev !== block) {
+        return true;
+      }
+    }
+
     return false;
   }
 
-  generateFood() {}
+  checkEat() {
+    // console.log(`Check eat: x:${(this.food.x - BsLOCK_SIZE) - this.snake.head.prev.x}  y:${this.food.y + BLOCK_SIZE - this.snake.head.prev.y} `)
+    if (this.snake.head.prev.x === this.food.x && this.snake.head.prev.y === this.food.y) return true;
+    return false;
+  }
+
+  generateFood() {
+    let x = Math.floor(Math.random() * (Board_1.BOARD_SIZE / 10)) * Board_1.BLOCK_SIZE % Board_1.BOARD_SIZE;
+    let y = Math.floor(Math.random() * (Board_1.BOARD_SIZE / 10)) * Board_1.BLOCK_SIZE % Board_1.BOARD_SIZE;
+    console.log(x, y);
+    this.food = {
+      x,
+      y
+    };
+  }
 
   handleGameState() {
     switch (this.state) {
@@ -437,16 +460,26 @@ class Game {
   start(delay = 200) {
     return __awaiter(this, void 0, void 0, function* () {
       document.onkeydown = this.checkKey.bind(this);
+      this.generateFood();
       this.state = State.Playing;
+      this.snake.eat();
+      this.snake.eat();
+      this.snake.eat();
+      this.snake.eat();
 
       while (this.state === State.Playing) {
         this.board.clear();
-        this.drawSnake();
+        this.render();
         this.snake.move();
 
         if (this.checkForCollision()) {
           this.state = State.GameOver;
           break;
+        }
+
+        if (this.checkEat()) {
+          this.snake.eat();
+          this.generateFood();
         }
 
         yield sleep(delay);
@@ -476,7 +509,7 @@ const Game_1 = __importDefault(require("./Game"));
 
 const game = new Game_1.default('canvas');
 console.log(game);
-game.start(150);
+game.start(100);
 },{"./Game":"Game.ts"}],"../../../../../../usr/local/lib/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -505,7 +538,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "46797" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34797" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -5,4 +5,4 @@ import Game from './Game';
 
 const game = new Game('canvas');
 console.log(game);
-game.start(150);
+game.start(100);
