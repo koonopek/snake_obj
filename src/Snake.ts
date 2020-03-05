@@ -1,4 +1,3 @@
-import { BLOCK_SIZE } from './Board';
 
 export default class Snake implements Iterable<Block> {
     
@@ -22,7 +21,6 @@ export default class Snake implements Iterable<Block> {
         let curr = this.head;
         return {
             next:function(){
-                console.log('in iterator');
                 if(curr.prev === null) return {value:null, done:true}
                 else { curr = curr.prev; return {value:curr, done:false}}
             }.bind(this)
@@ -30,7 +28,6 @@ export default class Snake implements Iterable<Block> {
     }
 
     checkForDirections(dir:Direction){
-        console.log(`this.dir : ${this.direction} dir: ${dir}`)
         if(dir === Direction.Down && this.direction === Direction.Up) return false
         if(dir === Direction.Up && this.direction === Direction.Down) return false
         if(dir === Direction.Left && this.direction === Direction.Right) return false
@@ -71,8 +68,6 @@ export default class Snake implements Iterable<Block> {
             block.y = newPositions[i].y;
             i++;
         }
-
-        
 
         this.head.prev = tmpBox;
         return true;

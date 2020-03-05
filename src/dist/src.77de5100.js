@@ -123,8 +123,8 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.BLOCK_SIZE = 20;
-exports.BOARD_SIZE = 300;
+exports.BOARD_SIZE = Math.round(Math.floor(window.innerHeight * 0.80) / 10) * 10;
+exports.BLOCK_SIZE = Math.floor(exports.BOARD_SIZE / 10);
 exports.BOARD_COLOR = "red";
 
 class Board {
@@ -136,6 +136,11 @@ class Board {
     this.canvas.height = boardSize;
     this.boardSize = boardSize;
     this.blockSize = blockSize;
+    this.scoreElement = document.getElementById('scoreValue');
+  }
+
+  setScore(value) {
+    this.scoreElement.innerText = value.toString();
   }
 
   drawBlock(x, y) {
@@ -200,7 +205,6 @@ class Snake {
     let curr = this.head;
     return {
       next: function () {
-        console.log('in iterator');
         if (curr.prev === null) return {
           value: null,
           done: true
@@ -216,7 +220,6 @@ class Snake {
   }
 
   checkForDirections(dir) {
-    console.log(`this.dir : ${this.direction} dir: ${dir}`);
     if (dir === Direction.Down && this.direction === Direction.Up) return false;
     if (dir === Direction.Up && this.direction === Direction.Down) return false;
     if (dir === Direction.Left && this.direction === Direction.Right) return false;
@@ -374,6 +377,18 @@ class Game {
     this.board = new Board_1.default(idCanvasElement);
     this.state = State.Pause;
     this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
+    this.setEvents();
+  }
+
+  reset() {
+    this.board.clear();
+    this.state = State.GameOver;
+    this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
+    this.start();
+  }
+
+  resume() {
+    this.start();
   }
 
   checkKey(e) {
@@ -394,6 +409,8 @@ class Game {
   }
 
   render() {
+    this.board.clear();
+
     for (const block of this.snake) {
       this.board.drawBlock(block.x, block.y);
     }
@@ -401,23 +418,30 @@ class Game {
     this.board.drawBlock(this.food.x, this.food.y);
   }
 
+  setEvents() {
+    document.getElementById('pause').addEventListener('click', () => {
+      if (this.state === State.Pause) this.resume();else this.state = State.Pause;
+    });
+    document.getElementById('reset').addEventListener('click', () => {
+      console.log("reset");
+      this.reset();
+    });
+  }
+
   checkForCollision() {
-    if (this.snake.head.prev.x < -Board_1.BLOCK_SIZE) return true;
-    if (this.snake.head.prev.y < -Board_1.BLOCK_SIZE) return true;
+    if (this.snake.head.prev.x < 0) return true;
+    if (this.snake.head.prev.y < 0) return true;
     if (this.snake.head.prev.x > Board_1.BOARD_SIZE) return true;
     if (this.snake.head.prev.y > Board_1.BOARD_SIZE) return true;
 
     for (const block of this.snake) {
-      if (this.snake.head.prev.x === block.x && this.snake.head.prev.y === block.y && this.snake.head.prev !== block) {
-        return true;
-      }
+      if (this.snake.head.prev.x === block.x && this.snake.head.prev.y === block.y && this.snake.head.prev !== block) return true;
     }
 
     return false;
   }
 
   checkEat() {
-    // console.log(`Check eat: x:${(this.food.x - BsLOCK_SIZE) - this.snake.head.prev.x}  y:${this.food.y + BLOCK_SIZE - this.snake.head.prev.y} `)
     if (this.snake.head.prev.x === this.food.x && this.snake.head.prev.y === this.food.y) return true;
     return false;
   }
@@ -425,26 +449,43 @@ class Game {
   generateFood() {
     let x = Math.floor(Math.random() * (Board_1.BOARD_SIZE / 10)) * Board_1.BLOCK_SIZE % Board_1.BOARD_SIZE;
     let y = Math.floor(Math.random() * (Board_1.BOARD_SIZE / 10)) * Board_1.BLOCK_SIZE % Board_1.BOARD_SIZE;
-    console.log(x, y);
     this.food = {
       x,
       y
     };
   }
 
-  handleGameState() {
+  handleGameState(interval) {
     switch (this.state) {
       case State.GameOver:
         this.gameOver();
+        if (interval) clearInterval(interval);
         break;
 
       case State.Win:
         this.win();
         break;
 
+      case State.Playing:
+        this.playing();
+        break;
+
+      case State.Pause:
+        if (interval) clearInterval(interval);
+
       default:
         break;
     }
+  }
+
+  countScore() {
+    let score = 0;
+
+    for (const block of this.snake) {
+      score++;
+    }
+
+    return score - 1;
   }
 
   gameOver() {
@@ -457,35 +498,36 @@ class Game {
     this.board.canvas.style.backgroundColor = "green";
   }
 
+  playing() {
+    this.board.canvas.style.backgroundColor = "red";
+  }
+
   start(delay = 200) {
     return __awaiter(this, void 0, void 0, function* () {
       document.onkeydown = this.checkKey.bind(this);
       this.generateFood();
       this.state = State.Playing;
-      this.snake.eat();
-      this.snake.eat();
-      this.snake.eat();
-      this.snake.eat();
-
-      while (this.state === State.Playing) {
-        this.board.clear();
-        this.render();
-        this.snake.move();
+      this.handleGameState();
+      const interval = setInterval(() => {
+        if (this.state === State.Playing) this.snake.move();
 
         if (this.checkForCollision()) {
           this.state = State.GameOver;
-          break;
         }
+      }, 100);
 
+      while (this.state === State.Playing) {
         if (this.checkEat()) {
           this.snake.eat();
           this.generateFood();
+          this.board.setScore(this.countScore());
         }
 
-        yield sleep(delay);
+        this.render();
+        yield sleep(60);
       }
 
-      this.handleGameState();
+      this.handleGameState(interval);
     });
   }
 
@@ -508,7 +550,6 @@ Object.defineProperty(exports, "__esModule", {
 const Game_1 = __importDefault(require("./Game"));
 
 const game = new Game_1.default('canvas');
-console.log(game);
 game.start(100);
 },{"./Game":"Game.ts"}],"../../../../../../usr/local/lib/node_modules/parcel/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
@@ -538,7 +579,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34797" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "35527" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

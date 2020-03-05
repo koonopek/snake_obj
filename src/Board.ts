@@ -1,5 +1,5 @@
-export const BLOCK_SIZE = 20;
-export const BOARD_SIZE = 300;
+export const BOARD_SIZE = Math.round(Math.floor(window.innerHeight * 0.80)/10)*10;
+export const BLOCK_SIZE = Math.floor(BOARD_SIZE/10);
 export const BOARD_COLOR = "red";
 
 export default class Board {
@@ -7,6 +7,7 @@ export default class Board {
     private ctx: CanvasRenderingContext2D;
     private blockSize: number;
     private boardSize: number;
+    private scoreElement: HTMLElement;
 
     constructor(idCanvasElement: string, boardColor = BOARD_COLOR, boardSize = BOARD_SIZE, blockSize = BLOCK_SIZE) {
         this.canvas = document.getElementById(idCanvasElement) as HTMLCanvasElement;
@@ -16,6 +17,11 @@ export default class Board {
         this.canvas.height = boardSize;
         this.boardSize = boardSize;
         this.blockSize = blockSize;
+        this.scoreElement = document.getElementById('scoreValue');
+    }
+
+    public setScore(value:number){
+        this.scoreElement.innerText = value.toString();
     }
 
     drawBlock(x: number, y: number) {
