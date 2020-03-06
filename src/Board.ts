@@ -1,4 +1,5 @@
-export const BOARD_SIZE = Math.round(Math.floor(window.innerHeight * 0.80)/10)*10;
+
+export const BOARD_SIZE = Math.round(Math.floor(Math.min(window.innerHeight,window.innerWidth) * 0.90)/10)*10;
 export const BLOCK_SIZE = Math.floor(BOARD_SIZE/10);
 export const BOARD_COLOR = "red";
 

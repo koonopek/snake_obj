@@ -1,5 +1,6 @@
 import Board, { BOARD_SIZE, BLOCK_SIZE, BOARD_COLOR } from './Board';
 import Snake, { Direction, Point } from './Snake';
+import Hammer from 'hammerjs';
 
 enum State {
     Playing,
@@ -22,7 +23,8 @@ export default class Game {
         this.board = new Board(idCanvasElement);
         this.state = State.Pause;
         this.snake = new Snake(BLOCK_SIZE);
-        this.setEvents();
+        this.setMobileEvents();
+        this.setDesktopEvents();
     }
 
     reset() {
@@ -30,6 +32,35 @@ export default class Game {
         this.state = State.GameOver;
         this.snake = new Snake(BLOCK_SIZE);
         this.start();
+    }
+
+    setMobileEvents() {
+        const mc = new Hammer.Manager(window);
+        mc.add(new Hammer.Swipe({ event: "sw_right", direction: Hammer.DIRECTION_RIGHT }));
+        mc.on("sw_right", () => { this.snake.changeDirection(Direction.Right) });
+
+        mc.add(new Hammer.Swipe({ event: "sw_up", direction: Hammer.DIRECTION_UP }));
+        mc.on("sw_up", () => { this.snake.changeDirection(Direction.Up) });
+
+        mc.add(new Hammer.Swipe({ event: "sw_down", direction: Hammer.DIRECTION_DOWN }));
+        mc.on("sw_down", () => { this.snake.changeDirection(Direction.Down) });
+
+        mc.add(new Hammer.Swipe({ event: "sw_left", direction: Hammer.DIRECTION_LEFT }));
+        mc.on("sw_left", () => { this.snake.changeDirection(Direction.Left) });
+
+
+        const pause = document.getElementById('pause');
+        const mcPause = new Hammer.Manager(pause); mcPause.add(new Hammer.Tap()); mcPause.on('tap', () => {
+            if (this.state === State.Pause) this.resume();
+            else this.state = State.Pause
+        })
+        const reset = document.getElementById('reset');
+        const mcReset = new Hammer.Manager(reset); mcReset.add(new Hammer.Tap()); mcReset.on('tap',()=>{
+            this.reset();
+            console.log('tap')
+        })
+
+
     }
 
     resume() {
@@ -63,7 +94,7 @@ export default class Game {
         this.board.drawBlock(this.food.x, this.food.y);
     }
 
-    setEvents() {
+    setDesktopEvents() {
         document.getElementById('pause').addEventListener('click', () => {
             if (this.state === State.Pause) this.resume();
             else this.state = State.Pause
@@ -106,7 +137,7 @@ export default class Game {
                 this.playing();
                 break;
             case State.Pause:
-                if(interval) clearInterval(interval);
+                if (interval) clearInterval(interval);
             default:
                 break;
         }
@@ -134,7 +165,7 @@ export default class Game {
         this.board.canvas.style.backgroundColor = "red";
     }
 
-    public async start(delay = 200) {
+    public async start(delay = 100) {
         document.onkeydown = this.checkKey.bind(this);
         this.generateFood();
         this.state = State.Playing;
@@ -143,7 +174,7 @@ export default class Game {
         const interval = setInterval(() => {
             if (this.state === State.Playing) this.snake.move();
             if (this.checkForCollision()) { this.state = State.GameOver; }
-        }, 100);
+        }, delay);
 
         while (this.state === State.Playing) {
             if (this.checkEat()) { this.snake.eat(); this.generateFood(); this.board.setScore(this.countScore()) }
