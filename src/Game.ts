@@ -12,6 +12,10 @@ enum State {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function isMobileDevice() {
+    return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+};
 //do exportu
 export default class Game {
     public snake: Snake;
@@ -23,11 +27,11 @@ export default class Game {
         this.board = new Board(idCanvasElement);
         this.state = State.Pause;
         this.snake = new Snake(BLOCK_SIZE);
-        this.setMobileEvents();
-        this.setDesktopEvents();
+        isMobileDevice() ? this.setMobileEvents() : this.setDesktopEvents();
+        console.log(isMobileDevice())
     }
 
-    reset() {
+    async reset() {
         this.board.clear();
         this.state = State.GameOver;
         this.snake = new Snake(BLOCK_SIZE);
@@ -56,8 +60,7 @@ export default class Game {
         })
         const reset = document.getElementById('reset');
         const mcReset = new Hammer.Manager(reset); mcReset.add(new Hammer.Tap()); mcReset.on('tap',()=>{
-            this.reset();
-            console.log('tap')
+            if(this.state === State.GameOver) this.reset();
         })
 
 
@@ -99,7 +102,7 @@ export default class Game {
             if (this.state === State.Pause) this.resume();
             else this.state = State.Pause
         });
-        document.getElementById('reset').addEventListener('click', () => { console.log("reset"); this.reset() })
+        document.getElementById('reset').addEventListener('click', () => { if(this.state === State.GameOver) this.reset(); })
     }
 
     checkForCollision(): boolean {

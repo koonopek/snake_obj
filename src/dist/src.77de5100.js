@@ -3025,23 +3025,30 @@ var State;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
-} //do exportu
+}
 
+function isMobileDevice() {
+  return typeof window.orientation !== "undefined" || navigator.userAgent.indexOf('IEMobile') !== -1;
+}
+
+; //do exportu
 
 class Game {
   constructor(idCanvasElement, boardColor = Board_1.BOARD_COLOR, boardSize = Board_1.BOARD_SIZE, blockSize = Board_1.BLOCK_SIZE) {
     this.board = new Board_1.default(idCanvasElement);
     this.state = State.Pause;
     this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
-    this.setMobileEvents();
-    this.setDesktopEvents();
+    isMobileDevice() ? this.setMobileEvents() : this.setDesktopEvents();
+    console.log(isMobileDevice());
   }
 
   reset() {
-    this.board.clear();
-    this.state = State.GameOver;
-    this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
-    this.start();
+    return __awaiter(this, void 0, void 0, function* () {
+      this.board.clear();
+      this.state = State.GameOver;
+      this.snake = new Snake_1.default(Board_1.BLOCK_SIZE);
+      this.start();
+    });
   }
 
   setMobileEvents() {
@@ -3084,8 +3091,7 @@ class Game {
     const mcReset = new hammerjs_1.default.Manager(reset);
     mcReset.add(new hammerjs_1.default.Tap());
     mcReset.on('tap', () => {
-      this.reset();
-      console.log('tap');
+      if (this.state === State.GameOver) this.reset();
     });
   }
 
@@ -3125,8 +3131,7 @@ class Game {
       if (this.state === State.Pause) this.resume();else this.state = State.Pause;
     });
     document.getElementById('reset').addEventListener('click', () => {
-      console.log("reset");
-      this.reset();
+      if (this.state === State.GameOver) this.reset();
     });
   }
 
@@ -3281,7 +3286,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "34351" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "44941" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
